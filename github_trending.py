@@ -13,7 +13,6 @@ def calculate_reference_date(days):
 
 
 def get_trending_repositories(top_size, reference_date):
-    headers = {"Accept": "Application/JSON"}
     uri = (
         "https://api.github.com/search/repositories?q=created:>={}"
         "&sort=star&page=1&per_page={}".format(
@@ -21,7 +20,7 @@ def get_trending_repositories(top_size, reference_date):
             top_size
         )
     )
-    trending_repos_responce = requests.get(uri, headers=headers)
+    trending_repos_responce = requests.get(uri)
     trending_repos_list = trending_repos_responce.json()["items"]
     return trending_repos_list
 
@@ -35,13 +34,12 @@ def get_open_issues(trending_repos_list):
         trending_repo_info["name"]
         for trending_repo_info in trending_repos_info_list
     ]
-    headers = {"Accept": "Application/JSON"}
     uri = (
         "https://api.github.com/search/issues?q=repo:{}+state:open".format(
             "+repo:".join(trending_repos_names)
         )
     )
-    open_issues_common_responce = requests.get(uri, headers=headers)
+    open_issues_common_responce = requests.get(uri)
     open_issues_common_list = open_issues_common_responce.json()["items"]
     for trending_repo_info in trending_repos_info_list:
         open_issues = []
