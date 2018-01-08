@@ -13,14 +13,19 @@ def calculate_reference_date(days):
 
 
 def get_trending_repositories(top_size, reference_date):
-    uri = (
-        "https://api.github.com/search/repositories?q=created:>={}"
-        "&sort=star&page=1&per_page={}".format(
-            reference_date,
-            top_size
-        )
+    headers = {"Accept": "Application/JSON"}
+    params = {
+        "sort": "star",
+        "page": "1",
+        "per_page": top_size,
+        "q": "created:>={}".format(reference_date)
+    }
+    url = "https://api.github.com/search/repositories"
+    trending_repos_responce = requests.get(
+        url,
+        headers=headers,
+        params=params
     )
-    trending_repos_responce = requests.get(uri)
     trending_repos_list = trending_repos_responce.json()["items"]
     return trending_repos_list
 
@@ -34,12 +39,16 @@ def get_open_issues(trending_repos_list):
         trending_repo_info["name"]
         for trending_repo_info in trending_repos_info_list
     ]
-    uri = (
-        "https://api.github.com/search/issues?q=repo:{}+state:open".format(
-            "+repo:".join(trending_repos_names)
-        )
+    headers = {"Accept": "Application/JSON"}
+    params = {
+        "q": "state:open repo:{}".format(" repo:".join(trending_repos_names))
+    }
+    url = "https://api.github.com/search/issues"
+    open_issues_common_responce = requests.get(
+        url,
+        headers=headers,
+        params=params
     )
-    open_issues_common_responce = requests.get(uri)
     open_issues_common_list = open_issues_common_responce.json()["items"]
     for trending_repo_info in trending_repos_info_list:
         open_issues = []
@@ -67,12 +76,21 @@ def print_pretty_info(trending_repos_info_list):
         open_issues_list = trending_repo_info["open_issues"]
         print(
             "\n"
-            "--------------------------------------------------------------"
+            "########################################"
+            "########################################"
             "\n"
+            "----------------------------------------"
+            "----------------------------------------"
             "\n"
             "Репозиторий: {},"
             "\n"
-            "расположен {}".format(repo_name, repo_url)
+            "расположен {}"
+            "\n"
+            "----------------------------------------"
+            "----------------------------------------".format(
+                repo_name,
+                repo_url
+            )
         )
         if open_issues_list:
             print(
@@ -81,13 +99,15 @@ def print_pretty_info(trending_repos_info_list):
             )
             for issue in open_issues_list:
                 print(
+                    "\n"
                     "issue: {}"
                     "\n"
                     "описан {}".format(issue["title"], issue["url"])
                 )
     print(
         "\n"
-        "--------------------------------------------------------------"
+        "########################################"
+        "########################################"
     )
 
 
