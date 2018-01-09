@@ -3,6 +3,7 @@
 
 import requests
 import datetime
+import collections
 
 
 def calculate_reference_date(days):
@@ -31,13 +32,10 @@ def get_trending_repositories(top_size, reference_date):
 
 
 def get_open_issues(trending_repos_list):
-    trending_repos_info_list = [
-        {"name": trending_repo["full_name"], "url": trending_repo["url"]}
-        for trending_repo in trending_repos_list
-    ]
+    open_issues = collections.defaultdict(list)
     trending_repos_names = [
-        trending_repo_info["name"]
-        for trending_repo_info in trending_repos_info_list
+        trending_repo["full_name"]
+        for trending_repo in trending_repos_list
     ]
     headers = {"Accept": "Application/JSON"}
     params = {
@@ -50,65 +48,45 @@ def get_open_issues(trending_repos_list):
         params=params
     )
     open_issues_common_list = open_issues_common_responce.json()["items"]
-    for trending_repo_info in trending_repos_info_list:
-        open_issues = []
-        for open_issue in open_issues_common_list:
-            if trending_repo_info["url"] == open_issue["repository_url"]:
-                open_issues.append(
-                    {
-                        "title": open_issue["title"],
-                        "url": open_issue["url"]
-                    }
-                )
-        trending_repo_info["open_issues"] = open_issues
-    return trending_repos_info_list
+    for open_issue in open_issues_common_list:
+        open_issues[open_issue["repository_url"]].append(open_issue)
+    return open_issues
 
 
-def print_pretty_info(trending_repos_info_list):
+def print_pretty_info(trending_repos_list, open_issues):
     print(
         "\n"
         "Список 20  самых популярных репозиториев открыты["
         "за последние 7 дней"
     )
-    for trending_repo_info in trending_repos_info_list:
-        repo_name = trending_repo_info["name"]
-        repo_url = trending_repo_info["url"]
-        open_issues_list = trending_repo_info["open_issues"]
+    for trending_repo in trending_repos_list:
+        repo_name = trending_repo["full_name"]
+        repo_url = trending_repo["url"]
         print(
             "\n"
-            "########################################"
-            "########################################"
+            "----------------------------------------"
+            "----------------------------------------"
             "\n"
-            "----------------------------------------"
-            "----------------------------------------"
             "\n"
             "Репозиторий: {},"
             "\n"
-            "расположен {}"
-            "\n"
-            "----------------------------------------"
-            "----------------------------------------".format(
+            "расположен {}".format(
                 repo_name,
                 repo_url
             )
         )
-        if open_issues_list:
+        if repo_url in open_issues.keys():
             print(
                 "\n"
                 "открытые issues:"
             )
-            for issue in open_issues_list:
+            for open_issue in open_issues[repo_url]:
                 print(
                     "\n"
                     "issue: {}"
                     "\n"
-                    "описан {}".format(issue["title"], issue["url"])
+                    "описан: {}".format(open_issue["title"], open_issue["url"])
                 )
-    print(
-        "\n"
-        "########################################"
-        "########################################"
-    )
 
 
 if __name__ == '__main__':
@@ -116,5 +94,5 @@ if __name__ == '__main__':
     top_size = 20
     reference_date = calculate_reference_date(days)
     trending_repos_list = get_trending_repositories(top_size, reference_date)
-    trending_repos_info_list = get_open_issues(trending_repos_list)
-    print_pretty_info(trending_repos_info_list)
+    open_issues = get_open_issues(trending_repos_list)
+    print_pretty_info(trending_repos_list, open_issues)
