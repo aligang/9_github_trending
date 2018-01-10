@@ -70,11 +70,12 @@ def print_pretty_info(trending_repos_list, open_issues):
         "за последние 7 дней"
         "\n"
     )
-    for order_in_list, trending_repo in enumerate(trending_repos_list):
+    for position_in_top, trending_repo in enumerate(
+        trending_repos_list,
+        start=1
+    ):
         repo_name = trending_repo["full_name"]
         repo_url = trending_repo["url"]
-        number_presentation_shift = 1
-        position_in_top = order_in_list + number_presentation_shift
         print("-"*screen_width)
         print(repo_output_template.format(
             repo_name,
