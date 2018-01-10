@@ -14,7 +14,6 @@ def calculate_reference_date(days):
 
 
 def get_trending_repositories(top_size, reference_date):
-    headers = {"Accept": "Application/JSON"}
     params = {
         "sort": "star",
         "page": "1",
@@ -24,7 +23,6 @@ def get_trending_repositories(top_size, reference_date):
     url = "https://api.github.com/search/repositories"
     trending_repos_responce = requests.get(
         url,
-        headers=headers,
         params=params
     )
     trending_repos_list = trending_repos_responce.json()["items"]
@@ -37,14 +35,12 @@ def get_open_issues(trending_repos_list):
         trending_repo["full_name"]
         for trending_repo in trending_repos_list
     ]
-    headers = {"Accept": "Application/JSON"}
     params = {
         "q": "state:open repo:{}".format(" repo:".join(trending_repos_names))
     }
     url = "https://api.github.com/search/issues"
     open_issues_common_responce = requests.get(
         url,
-        headers=headers,
         params=params
     )
     open_issues_common_list = open_issues_common_responce.json()["items"]
@@ -67,26 +63,31 @@ def print_pretty_info(trending_repos_list, open_issues):
         "\n"
         "описан: {}"
     )
+    screen_width = 80
     print(
         "\n"
         "Список 20  самых популярных репозиториев открытых"
         "за последние 7 дней"
         "\n"
     )
-    for trending_repo in trending_repos_list:
+    for order_in_list, trending_repo in enumerate(trending_repos_list):
         repo_name = trending_repo["full_name"]
         repo_url = trending_repo["url"]
         number_presentation_shift = 1
-        position_in_top = (
-            trending_repos_list.index(trending_repo) + 
-            number_presentation_shift
-        )
-        print("-"*80)
-        print(repo_output_template.format(repo_name, repo_url, position_in_top))
+        position_in_top = order_in_list + number_presentation_shift
+        print("-"*screen_width)
+        print(repo_output_template.format(
+            repo_name,
+            repo_url,
+            position_in_top
+        ))
         if repo_url in open_issues.keys():
             print("\nоткрытые issues:")
             for open_issue in open_issues[repo_url]:
-                print(issue_output_template.format(open_issue["title"],open_issue["url"]))
+                print(issue_output_template.format(
+                    open_issue["title"],
+                    open_issue["url"]
+                ))
 
 
 if __name__ == '__main__':
