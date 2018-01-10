@@ -54,39 +54,39 @@ def get_open_issues(trending_repos_list):
 
 
 def print_pretty_info(trending_repos_list, open_issues):
+    repo_output_template = (
+        "Репозиторий: {}"
+        "\n"
+        "Расположен: {}"
+        "\n"
+        "Позиция в топе: {}"
+        )
+    issue_output_template = (
+        "\n"
+        "issue: {}"
+        "\n"
+        "описан: {}"
+    )
     print(
         "\n"
-        "Список 20  самых популярных репозиториев открыты["
+        "Список 20  самых популярных репозиториев открытых"
         "за последние 7 дней"
+        "\n"
     )
     for trending_repo in trending_repos_list:
         repo_name = trending_repo["full_name"]
         repo_url = trending_repo["url"]
-        print(
-            "\n"
-            "----------------------------------------"
-            "----------------------------------------"
-            "\n"
-            "\n"
-            "Репозиторий: {},"
-            "\n"
-            "расположен {}".format(
-                repo_name,
-                repo_url
-            )
+        number_presentation_shift = 1
+        position_in_top = (
+            trending_repos_list.index(trending_repo) + 
+            number_presentation_shift
         )
+        print("-"*80)
+        print(repo_output_template.format(repo_name, repo_url, position_in_top))
         if repo_url in open_issues.keys():
-            print(
-                "\n"
-                "открытые issues:"
-            )
+            print("\nоткрытые issues:")
             for open_issue in open_issues[repo_url]:
-                print(
-                    "\n"
-                    "issue: {}"
-                    "\n"
-                    "описан: {}".format(open_issue["title"], open_issue["url"])
-                )
+                print(issue_output_template.format(open_issue["title"],open_issue["url"]))
 
 
 if __name__ == '__main__':
